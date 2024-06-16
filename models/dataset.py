@@ -1,5 +1,7 @@
 import sqlite3
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 
 class Dataset:
     def __init__(self, db_file = None):
@@ -13,6 +15,7 @@ class Dataset:
         # self.x_std = None
         if db_file:
             x, y = self.prepare_dataset(db_file)
+            # self.plot_data(x,y)
         else:
             x = np.load("pretrained_data/x.npy")
             y = np.load("pretrained_data/y.npy")
@@ -78,7 +81,7 @@ class Dataset:
             #     self.povez_map[d[7]] = br[3]
             #     br[3] += 1
             arr.append(self.povez_map[d[7]])
-            arr.append(float(d[8].split('x')[0]))
+            arr.append(float(d[8].split('x')[0]) * float(d[8].split('x')[1]))
             x.append(arr)
             y.append(d[3])
 
@@ -90,3 +93,75 @@ class Dataset:
             # self.y_std = np.std(y)
 
         return np.array(x), np.array(y) #(x - self.x_mean) / self.x_std, (y - self.y_mean) / self.y_std
+    
+    @staticmethod
+    def map_y_class(y, class_limits=[500, 1500, 3000, 5000]):
+        yc = []
+        for i in range(len(y)):
+            for j in range(len(class_limits)):
+                if j == 0 and y[i] <= class_limits[j]:
+                    yc.append(j)
+                    break
+                elif j == len(class_limits) - 1 or class_limits[j] < y[i] <= class_limits[j + 1]:
+                    yc.append(j + 1)
+                    break
+        return np.array(yc)
+    
+    def plot_data(self, x,y):
+    
+        with PdfPages('plot_data.pdf') as pdf:
+            plt.figure()
+            plt.plot(x[:, 1], y, 'o')
+            plt.xlabel('Kategorija')  # Add your x-axis label here
+            plt.ylabel('Cena')  # Add your y-axis label here
+            plt.title('Odnos kategorije i cene')     # Optional: Add a title to your plot
+            pdf.savefig()
+            #plt.show()
+
+            plt.figure()
+            plt.plot(x[:, 2], y, 'o')
+            plt.xlabel('Autor')  # Add your x-axis label here
+            plt.ylabel('Cena')  # Add your y-axis label here
+            plt.title('Odnos autor i cene')     # Optional: Add a title to your plot
+            pdf.savefig()
+            # plt.show()
+
+            plt.figure()
+            plt.plot(x[:, 3], y, 'o')
+            plt.xlabel('Izdavac')  # Add your x-axis label here
+            plt.ylabel('Cena')  # Add your y-axis label here
+            plt.title('Odnos izdavac-cena')     # Optional: Add a title to your plot
+            pdf.savefig()
+            # plt.show()
+
+            plt.figure()
+            plt.plot(x[:, 4], y, 'o')
+            plt.xlabel('Godina izdanja')  # Add your x-axis label here
+            plt.ylabel('Cena')  # Add your y-axis label here
+            plt.title('Odnos godine izdanja i cene')     # Optional: Add a title to your plot
+            pdf.savefig()
+            # plt.show()
+
+            plt.figure()
+            plt.plot(x[:, 5], y, 'o')
+            plt.xlabel('Broj strana')  # Add your x-axis label here
+            plt.ylabel('Cena')  # Add your y-axis label here
+            plt.title('Odnos broj strana i cene')     # Optional: Add a title to your plot
+            pdf.savefig()
+            # plt.show()
+
+            plt.figure()
+            plt.plot(x[:, 6], y, 'o')
+            plt.xlabel('Tip poveza')  # Add your x-axis label here
+            plt.ylabel('Cena')  # Add your y-axis label here
+            plt.title('Odnos tip poveza i cene')     # Optional: Add a title to your plot
+            pdf.savefig()
+            # plt.show()
+
+            plt.figure()
+            plt.plot(x[:, 7], y, 'o')
+            plt.xlabel('format')  # Add your x-axis label here
+            plt.ylabel('Cena')  # Add your y-axis label here
+            plt.title('Odnos formata i cene')     # Optional: Add a title to your plot
+            pdf.savefig()
+            # plt.show()

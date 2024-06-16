@@ -53,7 +53,7 @@ class LinearRegression:
             self.w = self.w - lr / m * (np.sum(self.w * x[i]) - y[i]) * x[i]
 
     def mse(self, x, y):
-        return np.mean((np.sum(self.w * x, axis=1) - y)**2) / 2
+        return np.mean((self.transform_back(np.sum(self.w * x, axis=1)) - self.transform_back(y))**2) / 2
 
     def train(self, x, y, lr = 0.01, epochs = 500):
         x, y = self.normalize_data(x,y)

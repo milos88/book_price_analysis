@@ -181,7 +181,7 @@ if __name__ == "__main__":
     top30_format = get_top30_large_format(conn_cleaned_db)
     print("Fetching done")
 
-    print("Storing data in the Excel file {excel_file}")
+    print(f"Storing data to the Excel file {excel_file}")
     with pd.ExcelWriter(excel_file) as f:
         b_per_cat.to_excel(f, sheet_name=('a'))
         b_per_pub.to_excel(f, sheet_name=('b'))
