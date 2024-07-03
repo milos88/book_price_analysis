@@ -9,13 +9,8 @@ class Dataset:
         self.autor_map = self.map_data(db_file, "autor")
         self.izdavac_map = self.map_data(db_file, "izdavac")
         self.povez_map = {"Broš": 0, "Tvrd": 1}
-        # self.y_mean = None
-        # self.y_std = None
-        # self.x_mean = None
-        # self.x_std = None
         if db_file:
             x, y = self.prepare_dataset(db_file)
-            # self.plot_data(x,y)
         else:
             x = np.load("pretrained_data/x.npy")
             y = np.load("pretrained_data/y.npy")
@@ -59,40 +54,17 @@ class Dataset:
 
         for d in data:
             arr = [1]
-            # if not d[1] in self.cat_map.keys():
-            #     self.cat_map[d[1]] = br[0]
-            #     br[0] += 1
-            arr.append(self.cat_map[d[1]])
-
-            # if not d[2] in self.autor_map.keys():
-            #     self.autor_map[d[2]] = br[1]
-            #     br[1] += 1
-            arr.append(self.autor_map[d[2]])
-
-            # if not d[4] in self.izdavac_map.keys():
-            #     self.izdavac_map[d[4]] = br[3]
-            #     br[3] += 1
-            arr.append(self.izdavac_map[d[4]])
-
-            arr.append(d[5])
-            arr.append(d[6])
-
-            # if not d[7] in self.povez_map.keys():
-            #     self.povez_map[d[7]] = br[3]
-            #     br[3] += 1
-            arr.append(self.povez_map[d[7]])
-            arr.append(float(d[8].split('x')[0]) * float(d[8].split('x')[1]))
+            arr.append(self.cat_map[d[1]]) # category
+            # arr.append(self.autor_map[d[2]]) # author
+            arr.append(self.izdavac_map[d[4]]) # publisher
+            arr.append(d[5]) # publish year
+            arr.append(d[6]) # number of pages
+            arr.append(self.povez_map[d[7]]) # povez tip
+            arr.append(float(d[8].split('x')[0]) * float(d[8].split('x')[1])) # format
             x.append(arr)
             y.append(d[3])
 
-            # self.x_std = np.std(x, axis=0)
-            # self.x_std[self.x_std == 0] = 1
-            # self.x_mean = np.mean(x, axis=0)
-            
-            # self.y_mean = np.mean(y)
-            # self.y_std = np.std(y)
-
-        return np.array(x), np.array(y) #(x - self.x_mean) / self.x_std, (y - self.y_mean) / self.y_std
+        return np.array(x), np.array(y)
     
     @staticmethod
     def map_y_class(y, class_limits=[500, 1500, 3000, 5000]):

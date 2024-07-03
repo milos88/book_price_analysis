@@ -8,6 +8,8 @@ from sklearn.linear_model import LogisticRegression as LogReg
 import numpy as np
 import matplotlib.pyplot as plt
 
+class_limits=[0, 500, 1500, 3000, 5000]
+
 def submit():
     pass
     # name = name_entry.get()
@@ -31,13 +33,13 @@ def predict(data: Dataset):
     model.load_model("pretrained_data/lin_regr_model.json")
     
     category = cat_var.get()
-    author = aut_var.get()
+    # author = aut_var.get()
     publisher = pub_var.get()
     year = int(year_entry.get())
     num_pages = int(page_entry.get())
     povez = povez_menu.get()
     format = format_entry.get()
-    x = np.array([1,data.cat_map[category], data.autor_map[author], data.izdavac_map[publisher], year, num_pages, data.povez_map[povez], float(format.lower().split('x')[0]) * float(format.lower().split('x')[1])])
+    x = np.array([1,data.cat_map[category], data.izdavac_map[publisher], year, num_pages, data.povez_map[povez], float(format.lower().split('x')[0]) * float(format.lower().split('x')[1])])
     x = model.transform(x)
     y = model.transform_back(model.predict(x))
 
@@ -94,7 +96,7 @@ def predict_log_reg(data: Dataset):
         x = model.transform(x)
         y = model.predict(x)
 
-        result_label.config(text=f"Predvidjena cena: {np.argmax(y)}")
+        result_label.config(text=f"Predvidjena cena u opsegu: {class_limits[np.argmax(y) - 1]} - {class_limits[np.argmax(y)]}")
     elif log_reg_type == "one_vs_all":
         model = OneVsAll(num_classes=5)
         model.load_model("pretrained_data/log_regr_model_one_vs_all.json")
@@ -102,34 +104,31 @@ def predict_log_reg(data: Dataset):
         x = model.transform(x)
         y = model.predict(x)
 
-        result_label.config(text=f"Predvidjena cena: {np.argmax(y)}")
+        result_label.config(text=f"Predvidjena cena u opsegu: {class_limits[np.argmax(y) - 1]} - {class_limits[np.argmax(y)]}")
         
     else:
         result_label.config(text=f"Izaberite tip logisticke regresije")
-    
-def kmeans(data):
+
+def kmeans_test(data):
     err = []
     test_k = range(1,9)
     
     for k in test_k:
         model = KMeans(k)
-        x = model.normalize_data(data.x[:, [1, 2, 6]])
+        x = model.normalize_data(data.x[:, [1, 3, 4]]) # data.x[:, [1, 3, 4]] # 
         model.train(x)
         err.append(model.error_)
-    # k = 2
-    # for i, e in enumerate(err):
-    #     if e < 1:
-    #         k = i
-    #         break
-
-    model = KMeans(6)
-    x = model.normalize_data(data.x[:, [1, 2, 6]])
-    model.train(x)
 
     plt.figure(figsize=(10, 8))
     plt.plot(test_k, err, 'bo-')
     plt.grid(True)
     plt.show()
+
+def kmeans(data):
+    k = int(k_entry.get())
+    model = KMeans(k)
+    x = model.normalize_data(data.x[:, [1, 3, 4]]) # data.x[:, [1, 3, 4]] # 
+    model.train(x)
 
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(111, projection='3d')
@@ -152,7 +151,7 @@ if __name__=="__main__":
     ttk.Label(frm, text="Zanr (Kategorija)").grid(column=0, row=0)
     cat_var = StringVar(value="")
     cat_menu = ttk.Combobox(frm, textvariable=cat_var, values=list(data.cat_map.keys()))
-    cat_menu.grid(row=0, column=1, columnspan=4, padx=10, pady=10)
+    cat_menu.grid(row=0, column=1, columnspan=2, padx=10, pady=10)
 
 
     ttk.Label(frm, text="Autor").grid(column=0, row=1)
@@ -167,11 +166,11 @@ if __name__=="__main__":
 
     ttk.Label(frm, text="Godina izdanja").grid(column=0, row=3)
     year_entry = ttk.Entry(frm, font=('calibre',10,'normal'))
-    year_entry.grid(column=1, row=3, padx=10, pady=10)
+    year_entry.grid(column=1, row=3, columnspan=2, padx=10, pady=10)
 
     ttk.Label(frm, text="Broj strana").grid(column=0, row=4)
     page_entry = ttk.Entry(frm, font=('calibre',10,'normal'))
-    page_entry.grid(column=1, row=4, padx=10, pady=10)
+    page_entry.grid(column=1, row=4, columnspan=2, padx=10, pady=10)
 
     ttk.Label(frm, text="Tip poveza").grid(column=0, row=5)
     povez_var = StringVar(value="")
@@ -180,25 +179,34 @@ if __name__=="__main__":
 
     ttk.Label(frm, text="Format (brXbr)").grid(column=0, row=6)
     format_entry = ttk.Entry(frm, font=('calibre',10,'normal'))
-    format_entry.grid(column=1, row=6)
+    format_entry.grid(column=1, row=6, columnspan=2)
 
-    ttk.Button(frm, text="Predvidi cenu", command=lambda: predict(data)).grid(column=1, row=7)
-    ttk.Button(frm, text="Treniraj", command=lambda: train_model(data)).grid(column=0, row=7)
+    ttk.Label(frm, text="Linearna regresija").grid(column=4, row=0, columnspan=2, padx=10, pady=10)
+    ttk.Button(frm, text="Predvidi cenu", command=lambda: predict(data)).grid(column=4, row=1, padx=10, pady=10)
+    ttk.Button(frm, text="Treniraj", command=lambda: train_model(data)).grid(column=5, row=1, padx=10, pady=10)
+    
+    ttk.Label(frm, text="Logisticka regresija").grid(column=4, row=3, columnspan=2, padx=10, pady=10)
+    radio_var = StringVar(value="multi")
+    multi_radio_button = Radiobutton(frm, text="Multinomijalna logisticka regresija", variable=radio_var, value="multi")
+    vs_radio_button = Radiobutton(frm, text="Jedan nasuprot svima", variable=radio_var, value="one_vs_all")
+    multi_radio_button.grid(row=4, column=4, columnspan=1, padx=10, pady=10)
+    vs_radio_button.grid(row=4, column=5, columnspan=1, padx=10, pady=10)
+    ttk.Button(frm, text="Treniraj", command=lambda: train_log_reg(data)).grid(column=4, row=5, padx=10, pady=10)
+    ttk.Button(frm, text="Predvidi cenu", command=lambda: predict_log_reg(data)).grid(column=5, row=5, padx=10, pady=10)
+    
+    ttk.Label(frm, text="K Means").grid(column=4, row=7, columnspan=2, padx=10, pady=10)
+    ttk.Button(frm, text="k Means", command=lambda: kmeans(data)).grid(column=5, row=8, padx=10, pady=10)
+    ttk.Button(frm, text="Testiraj", command=lambda: kmeans_test(data)).grid(column=5, row=9, padx=10, pady=10)
+    ttk.Label(frm, text="Broj klasa:").grid(column=4, row=8)
+    k_entry = ttk.Entry(frm, font=('calibre',10,'normal'))
+    k_entry.grid(column=4, row=9, columnspan=1, padx=10, pady=10)
     ttk.Button(frm, text="Quit", command=root.destroy).grid(column=1, row=12)
-    ttk.Button(frm, text="Treniraj Log Reg", command=lambda: train_log_reg(data)).grid(column=0, row=9)
-    ttk.Button(frm, text="Predvidi Cenu", command=lambda: predict_log_reg(data)).grid(column=1, row=9)
-    ttk.Button(frm, text="k Means", command=lambda: kmeans(data)).grid(column=0, row=10)
-
     # checkbox_var = BooleanVar()
     # checkbox = Checkbutton(root, text="Modify Result", variable=checkbox_var)
     # checkbox.grid(row=9, column=3, columnspan=2, padx=10, pady=10)
 
-    radio_var = StringVar(value="multi")
-    multi_radio_button = Radiobutton(root, text="Multinomijalna logisticka regresija", variable=radio_var, value="multi")
-    vs_radio_button = Radiobutton(root, text="Jedan nasuprot svima", variable=radio_var, value="one_vs_all")
-    multi_radio_button.grid(row=10, column=1, columnspan=2, padx=10, pady=10)
-    vs_radio_button.grid(row=11, column=1, columnspan=2, padx=10, pady=10)
+    
 
     result_label = ttk.Label(frm, text="")
-    result_label.grid(column=0, row=8)
+    result_label.grid(column=0, columnspan=2, row=8)
     root.mainloop()
